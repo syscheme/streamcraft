@@ -1,0 +1,3 @@
+[submodule "external/zq"]
+	path = external/zq
+	url = ssh://git@gitlab.xor-live.io:8022/SE1/ZQProjs.git

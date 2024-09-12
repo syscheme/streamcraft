@@ -6,7 +6,10 @@ import subprocess
 import os, time
 from datetime import datetime
 
-async def capture_screenshot(url, ffmpeg_process, width=1920, height=1080):
+from io import BytesIO
+from PIL import Image
+
+async def capture_screenshot(urls, ffmpeg_process, width=1920, height=1080):
     # 启动浏览器
     browser = await launch({
         'handleSIGINT': False,
@@ -28,19 +31,40 @@ async def capture_screenshot(url, ffmpeg_process, width=1920, height=1080):
             "--disable-infobars"  # 禁止提示 浏览器被驱动的提示信息
         ],
     })
-    page = await browser.newPage()
 
-    # 设置视口大小
-    await page.setViewport({'width': width, 'height': height})
+    if isinstance(urls, str): urls = urls.split(',')
+    pages = []
+    for url in urls :
+        page = await browser.newPage()
 
-    # 导航到指定 URL
-    await page.goto(url)
+        # 设置视口大小
+        await page.setViewport({'width': width, 'height': height})
+
+        # 导航到指定 URLipa
+        await page.goto(url)
+
+        pages.append(page)
 
     # 捕获屏幕截图并通过管道传给 FFmpeg
     tm_next = time.time()
     while True:
         fn_png = f'/data/page_{datetime.now().strftime("%H%M%S.%f")}.png'
-        await page.screenshot({'path': fn_png, 'type':'png', 'fullPage': True})
+
+        merged = None
+        for page in pages:
+            # await page.screenshot({'path': fn_png, 'type':'png', 'fullPage': True, 'omitBackground':True})
+            screenshot = await page.screenshot({'type':'png', 'fullPage': True, 'omitBackground':True})
+            screenshot = Image.open(BytesIO(screenshot))
+            if not merged :
+                merged = screenshot
+            else :
+                alpha = screenshot.split()[-1]
+                # non_transparent_pixels = alpha.getchannel('1')
+                # merged.paste(screenshot, (0,0), mask=non_transparent_pixels)
+                merged.paste(screenshot, None, mask=alpha) # default align at left-top, mask=alpha
+
+            merged.save(fn_png, format='PNG')
+
         # screenshot = await page.screenshot({'type': 'png'})
         # ffmpeg_process.stdin.write(screenshot)
         tm_now = time.time()
@@ -53,7 +77,16 @@ async def capture_screenshot(url, ffmpeg_process, width=1920, height=1080):
 
 # =============================================================
 if __name__ == '__main__':
-    url = 'http://192.168.82.18:8501/under_construction'
+    # url = 'http://192.168.82.18:8501/under_construction'
+    # url = 'file:///data/CG_graph/C1_1080i50-Guajiao01.swf'
+    url = 'file:///data/CG_graph/NE_Logo2/' # not work
+    url = 'file:///data/CG_graph/NE_Logo2/index.html' # works
+    url = 'file:///data/CG_graph/NE_Logo/index.html'
+    # url = 'file:///data/CG_graph/NW_Clock/index.html'
+    
+    # url = 'file:///data/CG_graph/NE_Logo2/images/Logo_atlas_.png'
+    # url = 'http://news.sina.com.cn/'
+    url = 'file:///data/CG_graph/NE_Logo/index.html,file:///data/CG_graph/NW_Clock/index.html'
     width, height =1920, 1080
     # width, height =3840, 2160
     # width, height =480, 240

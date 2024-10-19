@@ -1,6 +1,7 @@
 [submodule "external/zq"]
 	path = external/zq
 	url = ssh://git@gitlab.xor-live.io:8022/SE1/ZQProjs.git
+	branch = feature/vdcp
 [submodule "external/dpdk"]
 	path = external/dpdk
 	url = https://github.com/DPDK/dpdk.git

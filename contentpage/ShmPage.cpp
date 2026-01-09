@@ -51,11 +51,9 @@ extern "C" {
 
 #define RECONNECT_INTERVAL_DEFAULT  (10 * 1000) //10s
 
-using namespace ZQ::eloop;
-
-namespace ZQ {
-namespace memory {
-
+namespace syscheme {
+namespace StreamCraft {
+	
 #define min(a,b)    (((a) < (b)) ? (a) : (b))
 #define MAPSET(_MAPTYPE, _MAP, _KEY, _VAL) if (_MAP.end() ==_MAP.find(_KEY)) _MAP.insert(_MAPTYPE::value_type(_KEY, _VAL)); else _MAP[_KEY] = _VAL
 #define JSON_HAS(OBJ, CHILDNAME) (OBJ.isObject() && OBJ.isMember(CHILDNAME)) // for jsoncpp bug that didn't test type in isMember()

@@ -422,12 +422,12 @@ void BufferAllocate::testShmSegmentLocal3()
 		else
 		{
 			printf("allocted buffer[%d====>%02d] fd[%d] key[%s] length[%d] maxLength[%d] is [%s]\n", 
-				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getMaxSize(),
-				pShmSeg->getLength() == pShmSeg->getMaxSize() ? "full buffer" : "new allocte");
+				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getCapacity(),
+				pShmSeg->getLength() == pShmSeg->getCapacity() ? "full buffer" : "new allocte");
 
 			shmSegs.push_back(pShmSeg);
 
-			if(pShmSeg->getLength() == pShmSeg->getMaxSize())
+			if(pShmSeg->getLength() == pShmSeg->getCapacity())
 			{
 				uint8* buf = new uint8[shmSegs[i]->getLength()];
 
@@ -538,11 +538,11 @@ void BufferAllocate::testReadWrite()
 		else
 		{
 			printf("allocted buffer[%d====>%02d] fd[%d] key[%s] length[%d] maxLength[%d] is [%s]\n", 
-				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getMaxSize(),
-				pShmSeg->getLength() == pShmSeg->getMaxSize() ? "full buffer" : "new allocte");
+				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getCapacity(),
+				pShmSeg->getLength() == pShmSeg->getCapacity() ? "full buffer" : "new allocte");
 			shmSegs.push_back(pShmSeg);
 
-			if(pShmSeg->getLength() == pShmSeg->getMaxSize())
+			if(pShmSeg->getLength() == pShmSeg->getCapacity())
 			{
 				uint8* buf = new uint8[shmSegs[i]->getLength()];
 
@@ -608,8 +608,8 @@ void BufferAllocate::testReadWrite()
 		delete  []buf;
 
 		printf("filled buffer[%d====>%02d]=======> fd[%d] key[%s] len[%d/%d/%d/%d]\n", _bufCount, i +1, shmSegs[i]->fd(),  shmSegs[i]->key().c_str(), 
-			nwrite,nwrite2, shmSegs[i]->getLength(), shmSegs[i]->getMaxSize());
-		if(shmSegs[i]->getLength() == shmSegs[i]->getMaxSize())
+			nwrite,nwrite2, shmSegs[i]->getLength(), shmSegs[i]->getCapacity());
+		if(shmSegs[i]->getLength() == shmSegs[i]->getCapacity())
 		{
 			printf("full buffer notify: fd[%d] key[%s]\n",shmSegs[i]->fd(),  shmSegs[i]->key().c_str());
 			shmServer.onFull(shmSegs[i]);
@@ -619,8 +619,8 @@ void BufferAllocate::testReadWrite()
 	int readLength = 128;
 	for(int i = 0; i < shmSegs.size();  ++i)
 	{
-		uint8* buf = new uint8[shmSegs[i]->getMaxSize()];
-		memset(buf , 0, shmSegs[i]->getMaxSize());
+		uint8* buf = new uint8[shmSegs[i]->getCapacity()];
+		memset(buf , 0, shmSegs[i]->getCapacity());
 
 		printf("\nread buffer, key[%s]\n", shmSegs[i]->key().c_str());
 
@@ -634,7 +634,7 @@ void BufferAllocate::testReadWrite()
 			}
 
 			printf("\n");
-			memset(buf , 0, shmSegs[i]->getMaxSize());
+			memset(buf , 0, shmSegs[i]->getCapacity());
 			readLen = shmSegs[i]->flush(buf, readLength, shmSegs[i]->getLength() - readLength);
 			printf("\n	read from buffer end data %d byte:", readLen);
 			for(int len = 0; len < readLen; len ++)
@@ -688,8 +688,8 @@ void BufferAllocate::testDiskCacheRead()
 		else
 		{
 			printf("allocted buffer[%d====>%02d] fd[%d] key[%s] length[%d] maxLength[%d] is [%s]\n", 
-				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getMaxSize(),
-				pShmSeg->getLength() == pShmSeg->getMaxSize() ? "full buffer" : "new allocte");
+				_bufCount, i + 1 ,pShmSeg->fd(),  pShmSeg->key().c_str(), pShmSeg->getLength(),pShmSeg->getCapacity(),
+				pShmSeg->getLength() == pShmSeg->getCapacity() ? "full buffer" : "new allocte");
 
 			shmSegs.push_back(pShmSeg);
 

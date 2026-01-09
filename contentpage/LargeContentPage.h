@@ -28,8 +28,8 @@
 // $Log: /ZQProjs/Common/Exception.h $
 // ===========================================================================
 
-#ifndef __ZQ_Large_Content_Page_H__
-#define __ZQ_Large_Content_Page_H__
+#ifndef __streamcraft_LargeContentPage_H__
+#define __streamcraft_LargeContentPage_H__
 
 #include "ZQ_common_conf.h"
 #include "Pointer.h"
@@ -39,8 +39,8 @@
 #include "LRUMap.h"
 
 #include <list>
-namespace ZQ {
-namespace memory {
+namespace syscheme {
+namespace StreamCraft {
 
 #define INVALID_FD           (-1)
 #define SEGMENT_BITLEN       (21) // 2MB
@@ -291,4 +291,4 @@ public:	// impl of CPMIAPP(PageAllocator)
 
 }}//namespace
 
-#endif // __ZQ_Large_Content_Page_H__
+#endif // __streamcraft_LargeContentPage_H__

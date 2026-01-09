@@ -28,8 +28,8 @@
 // $Log: /ZQProjs/TianShan/Stream/VPumps.h $
 // ===========================================================================
 
-#ifndef __ZQ_mem_ShmPage_H__
-#define __ZQ_mem_ShmPage_H__
+#ifndef __streamcraft_ShmPage_H__
+#define __streamcraft_ShmPage_H__
 
 #include "ZQ_common_conf.h"
 #include "LargeContentPage.h"
@@ -43,8 +43,8 @@
 #include <queue>
 #include <map>
 
-namespace ZQ {
-namespace memory {
+namespace syscheme {
+namespace StreamCraft {
 
 ///ShmPage Buffer 
 /// head(512byte:  key) + data(2M)
@@ -295,6 +295,6 @@ private:
 	void _count(StatisticsType type);
 };
 
-}} //end namesapce  ZQ::memory
-#endif // __ZQ_mem_ShmPage_H__
+}} //end namesapce
+#endif // __streamcraft_ShmPage_H__
 

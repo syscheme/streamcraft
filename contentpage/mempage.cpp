@@ -43,9 +43,9 @@ extern "C" {
 }
 #endif // ZQ_OS
 
-namespace ZQ {
-namespace StreamWorker {
-
+namespace syscheme {
+namespace StreamCraft {
+	
 #define __N2S2__(x) #x
 #define __N2S__(x) __N2S2__(x)
 

@@ -28,15 +28,15 @@
 // $Log: /ZQProjs/Common/Exception.h $
 // ===========================================================================
 
-#ifndef _memory_PageFile_H__
-#define _memory_PageFile_H__
+#ifndef __streamcraft_PageFile_H__
+#define __streamcraft_PageFile_H__
 
 #include "ZQ_common_conf.h"
 #include "LargeContentPage.h"
 
 #include <list>
-namespace ZQ {
-namespace memory {
+namespace syscheme {
+namespace StreamCraft {
 
 // -----------------------------
 // class PageFile
@@ -126,4 +126,4 @@ protected:
 
 }}//namespace
 
-#endif // _memory_PageFile_H__
+#endif // __streamcraft_PageFile_H__

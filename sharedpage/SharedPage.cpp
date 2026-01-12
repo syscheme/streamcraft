@@ -18,7 +18,7 @@
 // The information in this software is subject to change without notice and
 // should not be construed as a commitment by ZQ Interactive, Inc.
 //
-// Ident : $Id: LargeContentPage.cpp $
+// Ident : $Id: SharedPage.cpp $
 // Branch: $Name:  $
 // Author: Hui Shao
 // Desc  : Define stream segment
@@ -28,7 +28,7 @@
 // $Log: /ZQProjs/Common/Exception.h $
 // ===========================================================================
 
-#include "LargeContentPage.h"
+#include "SharedPage.h"
 #include "TimeUtil.h"
 
 #ifndef ZQ_OS_MSWIN
@@ -50,9 +50,9 @@ namespace StreamCraft {
 #define __N2S__(x) __N2S2__(x)
 
 // -----------------------------
-// class LargeContentPage
+// class SharedPage
 // -----------------------------
-LargeContentPage::LargeContentPage(PageManager& segm, PageDescriptor& bufd, const std::string& uriOrigin, int64 offsetOrigin, int HeadLength)
+SharedPage::SharedPage(PageManager& segm, PageDescriptor& bufd, const std::string& uriOrigin, int64 offsetOrigin, int HeadLength)
 :_page_mgr(segm), _bufd(bufd),_headLength(HeadLength)
 {
 	_offsetOfOrigin = SEG_IDX_OF_OFFSET(offsetOrigin);
@@ -68,12 +68,12 @@ LargeContentPage::LargeContentPage(PageManager& segm, PageDescriptor& bufd, cons
 	_offsetOfOrigin = SEG_STARTOFFSET(_offsetOfOrigin);
 }
 
-LargeContentPage::~LargeContentPage()
+SharedPage::~SharedPage()
 {
 	_page_mgr.free(_bufd);
 }
 
-void LargeContentPage::resetAttr(const std::string& uriOrigin, int64 offsetOrigin)
+void SharedPage::resetAttr(const std::string& uriOrigin, int64 offsetOrigin)
 {
 	_offsetOfOrigin = SEG_IDX_OF_OFFSET(offsetOrigin);
 	/*	char str[SEGMENT_KEYLEN + 5];
@@ -90,7 +90,7 @@ void LargeContentPage::resetAttr(const std::string& uriOrigin, int64 offsetOrigi
 		memset(_bufd.ptr,'\0',_bufd.capacity + _headLength);
 }
 
-uint8* LargeContentPage::ptr()
+uint8* SharedPage::ptr()
 {
 	if (NULL != _bufd.ptr)
 		return _bufd.ptr;
@@ -103,7 +103,7 @@ uint8* LargeContentPage::ptr()
 	return _bufd.ptr;
 }
 
-uint LargeContentPage::addLength(uint len)
+uint SharedPage::addLength(uint len)
 {
 	uint originLen = _bufd.length;
 	_bufd.length += len;
@@ -113,7 +113,7 @@ uint LargeContentPage::addLength(uint len)
 	return (_bufd.length - originLen);
 }
 
-void LargeContentPage::setReadOnly(bool readonly) 
+void SharedPage::setReadOnly(bool readonly) 
 { 
 	if (readonly) 
 		FLAG_SETn(_bufd.flags, sfReadOnly); 
@@ -125,7 +125,7 @@ void LargeContentPage::setReadOnly(bool readonly)
 //@param length, the number of bytes to read from the source and fill into the segment
 //@param startOffset, if >=0, to specify the offset within the segment where to start fill
 //@return the number of bytes has successfully filled into the segment
-int LargeContentPage::fill(int fdSource, uint length, int startOffset)
+int SharedPage::fill(int fdSource, uint length, int startOffset)
 {
 	// TODO:
 	return 0;
@@ -136,12 +136,12 @@ int LargeContentPage::fill(int fdSource, uint length, int startOffset)
 //@param length, the number of bytes to read from the source and fill into the segment
 //@param startOffset, if >=0, to specify the offset within the segment where to start fill
 //@return the number of bytes has successfully filled into the segment
-int LargeContentPage::fill(uint8* source, uint length, int startOffset)
+int SharedPage::fill(uint8* source, uint length, int startOffset)
 {
 	uint8* target = ptr(), *t = target;
 	if (NULL == target || NULL == source)
 	{
-		_page_mgr._lw(ZQ::common::Log::L_ERROR, CLOGFMT(LargeContentPage, "fill() failed: source[%p] target[%p]"), source, target);
+		_page_mgr._lw(ZQ::common::Log::L_ERROR, CLOGFMT(SharedPage, "fill() failed: source[%p] target[%p]"), source, target);
 		return 0;
 	}
 
@@ -162,7 +162,7 @@ int LargeContentPage::fill(uint8* source, uint length, int startOffset)
 //@param length, the number of bytes to read from the segment
 //@param startOffset, if >=0, to specify the offset within the segment where to start flushing
 //@return the number of bytes has successfully filled into the segment
-int LargeContentPage::flush(int fdTarget, uint length, int startOffset)
+int SharedPage::flush(int fdTarget, uint length, int startOffset)
 {
 	// TODO:
 	return 0;
@@ -173,12 +173,12 @@ int LargeContentPage::flush(int fdTarget, uint length, int startOffset)
 //@param length, the number of bytes to read from the source and fill into the segment
 //@param startOffset, if >=0, to specify the offset within the segment where to start fill
 //@return the number of bytes has successfully filled into the segment
-int LargeContentPage::flush(uint8* target, uint length, int startOffset)
+int SharedPage::flush(uint8* target, uint length, int startOffset)
 {
 	uint8* source = ptr(), *s = source;
 	if (NULL == target || NULL == source)
 	{
-		_page_mgr._lw(ZQ::common::Log::L_ERROR, CLOGFMT(LargeContentPage, "flush() failed: source[%p] target[%p]"), source, target);
+		_page_mgr._lw(ZQ::common::Log::L_ERROR, CLOGFMT(SharedPage, "flush() failed: source[%p] target[%p]"), source, target);
 		return 0;
 	}
 
@@ -292,7 +292,7 @@ PageManager::PageManager(ZQ::common::Log& log, ZQ::eloop::Loop& loop,uint segPoo
 {
 	for(uint i=0; i<segPoolInit; i++)
 	{
-		LargeContentPage::PageDescriptor bufd;
+		SharedPage::PageDescriptor bufd;
 		bufd.capacity = SEGMENT_SIZE;
 		bufd.ptr = new uint8[SEGMENT_SIZE];
 		if (NULL == bufd.ptr)
@@ -319,13 +319,13 @@ std::string PageManager::genShmkey(const std::string& uriOrigin, int64 offsetOri
 }
 
 // allocate a segment with key as the purpsoe
-LargeContentPage::Ptr PageManager::allocate(const std::string& uriOrigin, int64 offsetOrigin)
+SharedPage::Ptr PageManager::allocate(const std::string& uriOrigin, int64 offsetOrigin)
 {
 	if (_segIdle.empty())
 	{
 		if (_segPool.size() < _segPoolMax)
 		{
-			LargeContentPage::PageDescriptor bufd;
+			SharedPage::PageDescriptor bufd;
 			bufd.capacity = SEGMENT_SIZE;
 			bufd.ptr = new uint8[SEGMENT_SIZE];
 			if (NULL == bufd.ptr)
@@ -343,13 +343,13 @@ LargeContentPage::Ptr PageManager::allocate(const std::string& uriOrigin, int64 
 		}
 	}
 	
-	LargeContentPage::PageDescriptor bufd = _segIdle.front();
+	SharedPage::PageDescriptor bufd = _segIdle.front();
 	_segIdle.pop_front();
 
-	LargeContentPage::Ptr seg = hatchSegObj<LargeContentPage>(bufd);
+	SharedPage::Ptr seg = hatchSegObj<SharedPage>(bufd);
 	if (seg == NULL)
 	{
-		TRACE(ZQ::common::Log::L_ERROR, CLOGFMT(StreamManager, "new LargeContentPage error."));
+		TRACE(ZQ::common::Log::L_ERROR, CLOGFMT(StreamManager, "new SharedPage error."));
 		return NULL;
 	}
 
@@ -379,7 +379,7 @@ static const uint8 NULL_PACKET[TSPACKET_LENTH] = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-LargeContentPage::Ptr PageManager::newNullSegment(const std::string& uriOrigin, int64 offsetOrigin)
+SharedPage::Ptr PageManager::newNullSegment(const std::string& uriOrigin, int64 offsetOrigin)
 {
 	// build up the static __segNullPackets, and let the readonly seg to map to it
 	static std::string __segNullPackets;
@@ -389,13 +389,13 @@ LargeContentPage::Ptr PageManager::newNullSegment(const std::string& uriOrigin, 
 			__segNullPackets.append((const char*)NULL_PACKET, TSPACKET_LENTH);
 	}
 
-	LargeContentPage::PageDescriptor bufd;
+	SharedPage::PageDescriptor bufd;
 	bufd.capacity = SEGMENT_SIZE;
 	bufd.length  = SEGMENT_SIZE;
-	FLAG_SETn(bufd.flags, LargeContentPage::sfReadOnly);
+	FLAG_SETn(bufd.flags, SharedPage::sfReadOnly);
 	bufd.ptr = (uint8*) (__segNullPackets.c_str() + (offsetOrigin %TSPACKET_LENTH));
 
-	LargeContentPage::Ptr seg = hatchSegObj<LargeContentPage>(bufd);
+	SharedPage::Ptr seg = hatchSegObj<SharedPage>(bufd);
 	if (!seg)
 	{
 		TRACE(ZQ::common::Log::L_ERROR, CLOGFMT(PauseWin, "newNullSegment() uri[%s] %lld failed"), uriOrigin.c_str(), offsetOrigin);
@@ -406,12 +406,12 @@ LargeContentPage::Ptr PageManager::newNullSegment(const std::string& uriOrigin, 
 	return seg;
 }
 
-void PageManager::freeNullSegment(LargeContentPage::Ptr seg)
+void PageManager::freeNullSegment(SharedPage::Ptr seg)
 {
 	// do nothing
 }
 
-void PageManager::free(LargeContentPage::Ptr seg)
+void PageManager::free(SharedPage::Ptr seg)
 {
 	if (NULL == seg || NULL == seg->_bufd.ptr)
 		return;
@@ -419,7 +419,7 @@ void PageManager::free(LargeContentPage::Ptr seg)
 	return free(seg->_bufd);
 }
 
-void PageManager::free(LargeContentPage::PageDescriptor bufd)
+void PageManager::free(SharedPage::PageDescriptor bufd)
 {
 	_segIdle.push_back(bufd);
 }
@@ -428,23 +428,23 @@ void PageManager::clear()
 {
 	while(!_segPool.empty())
 	{
-		LargeContentPage::PageDescriptor bufd = _segPool.front();
+		SharedPage::PageDescriptor bufd = _segPool.front();
 		if (bufd.ptr) delete[] bufd.ptr;
 		bufd.ptr = NULL;
 		bufd.fd = INVALID_FD;
 		_segPool.pop_front();
-		TRACE(ZQ::common::Log::L_DEBUG, CLOGFMT(LargeContentPage, "free segment"));
+		TRACE(ZQ::common::Log::L_DEBUG, CLOGFMT(SharedPage, "free segment"));
 	}
 
 	while(!_segIdle.empty())
 		_segIdle.pop_front();
 }
 
-void PageManager::onFull(LargeContentPage::Ptr seg)
+void PageManager::onFull(SharedPage::Ptr seg)
 {
 }
 
-void PageManager::updateSegment(LargeContentPage::Ptr seg)
+void PageManager::updateSegment(SharedPage::Ptr seg)
 {
 }
 
@@ -499,7 +499,7 @@ bool FDWrapper::preOpenForLoad(const std::string& pathname, ZQ::common::Log *pLo
 #define SegmentFile_MagicNumber    (0x0131C9A5)
 #define SegmentFile_CurrentVersion (0x0100)
 
-PageFile::IOError PageFile::bufDescToHeader(const LargeContentPage::PageDescriptor& segBufd, Header& fheader)
+PageFile::IOError PageFile::bufDescToHeader(const SharedPage::PageDescriptor& segBufd, Header& fheader)
 {
 	memset(&fheader, 0x00, sizeof(fheader));
 	fheader.data.signature       = SegmentFile_MagicNumber;
@@ -518,7 +518,7 @@ PageFile::IOError PageFile::bufDescToHeader(const LargeContentPage::PageDescript
 	return eOK;
 }
 
-PageFile::IOError PageFile::headerToBufDesc(Header& fheader, LargeContentPage::PageDescriptor& segBufd)
+PageFile::IOError PageFile::headerToBufDesc(Header& fheader, SharedPage::PageDescriptor& segBufd)
 {
 	if ((SegmentFile_MagicNumber != fheader.data.signature) || (SegmentFile_CurrentVersion != fheader.data.version))
 		return eBadHeader;
@@ -578,7 +578,7 @@ void testReadFile(int fd, const std::string& key)
 	::munmap(ptr, SEGMENT_SIZE + HEADLEN_SegmentFile);
 }
 
-PageFile::IOError PageFile::save(int fdFile, const LargeContentPage::PageDescriptor& segBufd)
+PageFile::IOError PageFile::save(int fdFile, const SharedPage::PageDescriptor& segBufd)
 {
 //	printf("save()key[%s]\n\n",  segBufd.key.c_str());
 
@@ -637,7 +637,7 @@ PageFile::IOError PageFile::save(int fdFile, const LargeContentPage::PageDescrip
 	return eOK;
 }
 
-PageFile::IOError PageFile::save(const std::string& pathname, LargeContentPage::PageDescriptor& segBufd)
+PageFile::IOError PageFile::save(const std::string& pathname, SharedPage::PageDescriptor& segBufd)
 {
 	int fd = open(pathname.c_str(), O_RDWR | O_CREAT); // | O_TRUNC);
 	if (fd <=0)
@@ -648,7 +648,7 @@ PageFile::IOError PageFile::save(const std::string& pathname, LargeContentPage::
 	return err;
 }
 
-PageFile::IOError PageFile::loadHeader(int fdFile, LargeContentPage::PageDescriptor& segBufd)
+PageFile::IOError PageFile::loadHeader(int fdFile, SharedPage::PageDescriptor& segBufd)
 {
 /*	// read the header by mmaping it
 	Header* pHeader = (Header*)::mmap(NULL, sizeof(Header), PROT_READ, MAP_SHARED, fdFile, 0);
@@ -678,7 +678,7 @@ PageFile::IOError PageFile::loadHeader(int fdFile, LargeContentPage::PageDescrip
 	return eOK;
 }
 
-PageFile::IOError PageFile::load(const std::string& pathname, LargeContentPage::PageDescriptor& segBufd,  ZQ::common::Log *pLog)
+PageFile::IOError PageFile::load(const std::string& pathname, SharedPage::PageDescriptor& segBufd,  ZQ::common::Log *pLog)
 {
 	FDWrapper::Ptr pFD = FDWrapper::openForLoad(pathname, pLog);
 	/*int fd = open(pathname.c_str(), O_RDWR);*/

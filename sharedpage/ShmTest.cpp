@@ -403,7 +403,7 @@ private:
 void BufferAllocate::testShmSegmentLocal3()
 {
 	ZQ::memory::ShmPages_Local& shmServer = _shmServer;
-	std::vector<ZQ::memory::LargeContentPage::Ptr> shmSegs;
+	std::vector<ZQ::memory::SharedPage::Ptr> shmSegs;
 	int64 offsetOrigin = 0;
 	int _bufCount = 10;
 	const std::string& uriOrigin = "TestShmSegment";
@@ -412,7 +412,7 @@ void BufferAllocate::testShmSegmentLocal3()
 	for(int i =0; i < _bufCount; )
 	{
 		//printf("try allocte buffer[%d====>%02d]...\n", _bufCount, i+1);
-		ZQ::memory::LargeContentPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
+		ZQ::memory::SharedPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
 		if(pShmSeg ==  NULL)
 		{
 			printf("allocted buffer[%d] failed\n", i +1  );
@@ -479,7 +479,7 @@ void BufferAllocate::testShmSegmentLocal3()
 	for(int i = 0; i < 5 && shmSegs.size() > 5; ++i)
 	{
 		//printf("try allocte buffer[%d====>%02d]...\n", _bufCount, i+1);
-		ZQ::memory::LargeContentPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
+		ZQ::memory::SharedPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
 		if(pShmSeg ==  NULL)
 			printf("re allocted buffer[%d] failed\n", i +1  );
 		else
@@ -496,7 +496,7 @@ void BufferAllocate::testShmSegmentLocal3()
 	for(int i = 0; i < 5 && shmSegs.size() > 5; ++i)
 	{
 		//printf("try allocte buffer[%d====>%02d]...\n", _bufCount, i+1);
-		ZQ::memory::LargeContentPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
+		ZQ::memory::SharedPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
 		if(pShmSeg ==  NULL)
 			printf("2-rd re allocted buffer[%d] failed\n", i +1  );
 		else
@@ -520,7 +520,7 @@ void BufferAllocate::testShmSegmentLocal3()
 void BufferAllocate::testReadWrite()
 {
 	ZQ::memory::ShmPages_Local& shmServer = _shmServer;
-	std::vector<ZQ::memory::LargeContentPage::Ptr> shmSegs;
+	std::vector<ZQ::memory::SharedPage::Ptr> shmSegs;
 	int64 offsetOrigin = 0;
 	int _bufCount = 10;
 	const std::string& uriOrigin = "TestShmSegmentRW";
@@ -528,7 +528,7 @@ void BufferAllocate::testReadWrite()
 	printf("allocate buffer......\n");
 	for(int i =0; i < _bufCount; )
 	{
-		ZQ::memory::LargeContentPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
+		ZQ::memory::SharedPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
 		if(pShmSeg ==  NULL)
 		{
 			printf("allocted buffer[%d] failed\n", i +1  );
@@ -670,7 +670,7 @@ void BufferAllocate::testReadWrite()
 void BufferAllocate::testDiskCacheRead()
 {
 	ZQ::memory::ShmPages_Local& shmServer = _shmServer;
-	std::vector<ZQ::memory::LargeContentPage::Ptr> shmSegs;
+	std::vector<ZQ::memory::SharedPage::Ptr> shmSegs;
 	int64 offsetOrigin = 0;
 	int _bufCount = 10;
 	const std::string& uriOrigin = "ngodc2://10.8.8.171:10080/testB020170510001001xor.com.0X0000";
@@ -678,7 +678,7 @@ void BufferAllocate::testDiskCacheRead()
 	printf("allocate buffer......\n");
 	for(int i =0; i < _bufCount; )
 	{
-		ZQ::memory::LargeContentPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
+		ZQ::memory::SharedPage::Ptr pShmSeg = shmServer.allocate(uriOrigin, offsetOrigin);
 		if(pShmSeg ==  NULL)
 		{
 			printf("allocted buffer[%d] failed\n", i +1  );

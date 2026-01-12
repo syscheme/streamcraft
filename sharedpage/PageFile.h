@@ -18,7 +18,7 @@
 // The information in this software is subject to change without notice and
 // should not be construed as a commitment by ZQ Interactive, Inc.
 //
-// Ident : $Id: LargeContentPage.h $
+// Ident : $Id: SharedPage.h $
 // Branch: $Name:  $
 // Author: Hui Shao
 // Desc  : Define stream segment
@@ -32,7 +32,7 @@
 #define __streamcraft_PageFile_H__
 
 #include "ZQ_common_conf.h"
-#include "LargeContentPage.h"
+#include "SharedPage.h"
 
 #include <list>
 namespace syscheme {
@@ -84,19 +84,19 @@ public:
 	} Header;
 
 	//@note also cover fheader fixup
-	static IOError bufDescToHeader(const LargeContentPage::PageDescriptor& segBufd, Header& fheader);
+	static IOError bufDescToHeader(const SharedPage::PageDescriptor& segBufd, Header& fheader);
 
 	//@note also cover fheader validation
-	static IOError headerToBufDesc(Header& fheader, LargeContentPage::PageDescriptor& segBufd);
+	static IOError headerToBufDesc(Header& fheader, SharedPage::PageDescriptor& segBufd);
 
-	static IOError save(const std::string& pathname, LargeContentPage::PageDescriptor& segBufd);
-	static IOError load(const std::string& pathname, LargeContentPage::PageDescriptor& segBufd,  ZQ::common::Log *pLog = NULL);
+	static IOError save(const std::string& pathname, SharedPage::PageDescriptor& segBufd);
+	static IOError load(const std::string& pathname, SharedPage::PageDescriptor& segBufd,  ZQ::common::Log *pLog = NULL);
 
-    static IOError loadHeader(int fdFile, LargeContentPage::PageDescriptor& segBufd);
+    static IOError loadHeader(int fdFile, SharedPage::PageDescriptor& segBufd);
 
 #ifndef ZQ_OS_MSWIN
-	static IOError save(int fdFile, const LargeContentPage::PageDescriptor& segBufd);
-	static IOError load(int fdFile, LargeContentPage::PageDescriptor& segBufd);
+	static IOError save(int fdFile, const SharedPage::PageDescriptor& segBufd);
+	static IOError load(int fdFile, SharedPage::PageDescriptor& segBufd);
 
 #endif // ZQ_OS
 };

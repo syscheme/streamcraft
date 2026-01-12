@@ -32,7 +32,7 @@
 #define __streamcraft_ShmPage_H__
 
 #include "ZQ_common_conf.h"
-#include "LargeContentPage.h"
+#include "SharedPage.h"
 #include "PageFile.h"
 
 #include "FileLog.h"
@@ -53,7 +53,7 @@ namespace StreamCraft {
 // class ShmPage
 // -----------------------------
 // the desriptor of buffer, target will be the fd to the shm
-class ShmPage : public LargeContentPage
+class ShmPage : public SharedPage
 {
 public:
 	typedef ZQ::common::Pointer<ShmPage> Ptr;
@@ -126,9 +126,9 @@ public:
 
 	///allocate a segment with key as the purpsoe
 	///implement  PageManager
-	virtual LargeContentPage::Ptr allocate(const std::string& uriOrigin, int64 offsetOrigin);
-	virtual void onFull(LargeContentPage::Ptr seg);
-	virtual void updateSegment(LargeContentPage::Ptr seg);
+	virtual SharedPage::Ptr allocate(const std::string& uriOrigin, int64 offsetOrigin);
+	virtual void onFull(SharedPage::Ptr seg);
+	virtual void updateSegment(SharedPage::Ptr seg);
 	uint32 getMaxSegs() { return _maxSegs; };
 	std::string fd2SegmentName(int fd);
 
@@ -162,8 +162,8 @@ public:
 protected:
 
 	///implement PageManager
-	virtual void free(LargeContentPage::Ptr seg);
-	virtual void free(LargeContentPage::PageDescriptor bufd);
+	virtual void free(SharedPage::Ptr seg);
+	virtual void free(SharedPage::PageDescriptor bufd);
 	virtual size_t freeSize();
 
 	size_t _recycleFd(int freeFd, const char* reason = "");
@@ -188,7 +188,7 @@ protected:
 		typedef ZQ::common::Pointer<ShmFile> Ptr;
 	public:
 		ShmFile(){ _cHatched.set(0);}
-		ShmFile(const std::string& pathName, const LargeContentPage::PageDescriptor& bufd)
+		ShmFile(const std::string& pathName, const SharedPage::PageDescriptor& bufd)
 			: _pathName(pathName), _bufd(bufd)
 		{
 			_cHatched.set(0);
@@ -221,7 +221,7 @@ protected:
 		 */
 	 public:
 		std::string _pathName;
-		LargeContentPage::PageDescriptor _bufd;
+		SharedPage::PageDescriptor _bufd;
 		ZQ::common::AtomicInt _cHatched;
 	};
 
@@ -278,7 +278,7 @@ protected:
 	FdSet         _fdLists;//for test
 
 private:
-	LargeContentPage::Ptr hatch(ShmFile& shmFile, const std::string& uriOrigin, int64 offsetOrigin);
+	SharedPage::Ptr hatch(ShmFile& shmFile, const std::string& uriOrigin, int64 offsetOrigin);
 	bool _newNextSeg(); // thread unsafe
 	int clearShmMem(const char* pathName,const char* fitName);//used for clean the redundant shm before newSeg
 	void clear();

@@ -65,7 +65,7 @@ namespace StreamCraft {
 // class ShmPage
 // -----------------------------
 ShmPage::ShmPage(PageManager& sm, PageDescriptor& bufd, const std::string& uriOrigin, int64 offsetOrigin, int headLength)
-: LargeContentPage(sm, bufd, uriOrigin, offsetOrigin, headLength), _offsetInFd(HEADLEN_SegmentFile)
+: SharedPage(sm, bufd, uriOrigin, offsetOrigin, headLength), _offsetInFd(HEADLEN_SegmentFile)
 {
 	if (_bufd.fd > 0)
 		lseek(_bufd.fd, _offsetInFd, SEEK_SET);
@@ -402,7 +402,7 @@ ShmPages_Local::~ShmPages_Local()
 
 void ShmPages_Local::ShmFile::updateHeader()
 {
-	ZQ::memory::LargeContentPage::PageDescriptor segBufd;
+	ZQ::memory::SharedPage::PageDescriptor segBufd;
 	ZQ::memory::PageFile::Header fheader;
 	segBufd.fd = _bufd.fd;
 	segBufd.flags = _bufd.flags;
@@ -434,7 +434,7 @@ std::string ShmPages_Local::fd2SegmentName(int fd)
 }
 
 // allocate a segment with key as the purpsoe
-LargeContentPage::Ptr ShmPages_Local::allocate(const std::string& uriOrigin, int64 offsetOrigin)
+SharedPage::Ptr ShmPages_Local::allocate(const std::string& uriOrigin, int64 offsetOrigin)
 {
 	int64 lStart = ZQ::common::now();
 	int64 tmpOffsetOfOrigin =  SEG_IDX_OF_OFFSET(offsetOrigin);
@@ -443,7 +443,7 @@ LargeContentPage::Ptr ShmPages_Local::allocate(const std::string& uriOrigin, int
 
 	int freeFd = 0;
 
-	LargeContentPage::Ptr  streamSegmentPtr;
+	SharedPage::Ptr  streamSegmentPtr;
 	ZQ::common::MutexGuard g(_lkShm);
 
 	KeyToFdIndex::iterator itUsed = _usedIdxKeyToFd.find(key);
@@ -707,13 +707,13 @@ int  ShmPages_Local::_findFreeFd(const std::string& key, const std::string& uriO
 	return itShmFile->second._bufd.fd;
 }
 
-LargeContentPage::Ptr ShmPages_Local::hatch(ShmFile& shmFile, const std::string& uriOrigin, int64 offsetOrigin)
+SharedPage::Ptr ShmPages_Local::hatch(ShmFile& shmFile, const std::string& uriOrigin, int64 offsetOrigin)
 {
 	shmFile._cHatched.inc();
 	return hatchSegObj<ShmPage>(shmFile._bufd, uriOrigin, offsetOrigin); // leave the bufd.key as it was assigned
 }
 
-void ShmPages_Local::free(LargeContentPage::PageDescriptor bufd)
+void ShmPages_Local::free(SharedPage::PageDescriptor bufd)
 {	
 	int64 lStart = ZQ::common::now();
 #ifdef _DEBUG
@@ -779,12 +779,12 @@ void ShmPages_Local::free(LargeContentPage::PageDescriptor bufd)
 		itShmFile->second._bufd.key.c_str(), itShmFile->second._pathName.c_str(), itShmFile->second._bufd.fd, itShmFile->second._bufd.length, itShmFile->second._bufd.capacity, _usedIdxKeyToFd.size(), _freeList.size(), _maxSegs, (int)(ZQ::common::now() - lStart));
 }
 
-void ShmPages_Local::free(LargeContentPage::Ptr seg)
+void ShmPages_Local::free(SharedPage::Ptr seg)
 {
 	if (!seg)
 		return;
 
-	LargeContentPage::PageDescriptor bufd;
+	SharedPage::PageDescriptor bufd;
 	bufd.key =  seg->key();
 	if(seg->isDirtyLeading())
 	{
@@ -841,7 +841,7 @@ bool ShmPages_Local::_newNextSeg() // thread unsafe
 	std::string key = PageManager::genShmkey(segname, 0);
 
 	///add fd to _freeSegs
-	LargeContentPage::PageDescriptor bufd;
+	SharedPage::PageDescriptor bufd;
 	bufd.capacity = SEGMENT_SIZE;
 	bufd.fd = fd;
 	bufd.key = key;
@@ -858,12 +858,12 @@ bool ShmPages_Local::_newNextSeg() // thread unsafe
 	return true;
 }
 
-void ShmPages_Local::onFull(LargeContentPage::Ptr seg)
+void ShmPages_Local::onFull(SharedPage::Ptr seg)
 {
 	int64 lStart = ZQ::common::now();
 
 	//log(ZQ::common::Log::L_INFO, CLOGFMT(ShmSegments, "onFull() fd[%d] key[%s]flags[%d]"), seg->fd(),seg->key().c_str(),seg->flags());
-	if(FLAG_ISSETn(seg->flags() , LargeContentPage::sfDirtyLeading))
+	if(FLAG_ISSETn(seg->flags() , SharedPage::sfDirtyLeading))
 	{
 		TRACE(ZQ::common::Log::L_INFO, CLOGFMT(ShmSegments, "onFull() key[%s] shm[%s(%d)] DirtyLeading data len[%d/%d] skip onFull, took %dms"),  seg->key().c_str(),fd2SegmentName(seg->fd()).c_str(), seg->fd(), seg->getLength(), seg->getCapacity(), (int)(ZQ::common::now() - lStart));
 		return ;
@@ -901,7 +901,7 @@ void ShmPages_Local::onFull(LargeContentPage::Ptr seg)
 		 seg->key().c_str(),fd2SegmentName(seg->fd()).c_str(), seg->fd(), seg->getLength(), seg->getCapacity(),segD.flags, cseqDCReq, (int)(ZQ::common::now() - lStart));
 }
 
-void ShmPages_Local::updateSegment(LargeContentPage::Ptr seg)
+void ShmPages_Local::updateSegment(SharedPage::Ptr seg)
 {
 /*
 	if(seg->isDirtyLeading())
@@ -916,7 +916,7 @@ void ShmPages_Local::updateSegment(LargeContentPage::Ptr seg)
 			return;
 		}
 
-		FLAG_SETn(itorShmFile->second._bufd.flags, LargeContentPage::sfDirtyLeading);
+		FLAG_SETn(itorShmFile->second._bufd.flags, SharedPage::sfDirtyLeading);
 	}
 */
 }
@@ -1290,7 +1290,7 @@ void ShmPages_Local::rpcAllocate(const  ZQ::eloop::LIPCRequest::Ptr& req,  ZQ::e
 	std::string strParams = writer.write(params);
 	TRACE(ZQ::common::Log::L_INFO, CLOGFMT(ShmSegments, "rpcAllocate() id[%d] request params[%s]"), rpcId, strParams.c_str());
 
-	LargeContentPage::Ptr streamSegPtr = NULL;
+	SharedPage::Ptr streamSegPtr = NULL;
 	int fd = -1;
 	if((!uriOrigin.empty() && offsetOrigin >=0  && !key.empty()))
 	{
